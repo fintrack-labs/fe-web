@@ -19,7 +19,8 @@ const handleLogin = async () => {
     const response = await authApi.post('/login', {
       email: email.value,
       password: password.value,
-      clientId: import.meta.env.VITE_CLIENT_ID
+      clientId: import.meta.env.VITE_CLIENT_ID,
+      clientSecret: import.meta.env.VITE_CLIENT_SECRET,
     })
     const {accessToken, refreshToken} = response as any;
     useAuthStore().setToken(accessToken, refreshToken)

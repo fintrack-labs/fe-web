@@ -32,6 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
     function setUser() {
         if (!token.value) return
         const payload = decodeJwt(token.value)
+        console.log('DEBUG payload', payload)
         if (!payload) return
 
         const userId = payload.sub
