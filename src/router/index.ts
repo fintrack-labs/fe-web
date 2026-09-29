@@ -12,6 +12,12 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { requiresGuest: true }
+    },
+    {
       path: '/',
       component: () => import('@/layouts/DashboardLayout.vue'),
       meta: { requiresAuth: true },
@@ -22,9 +28,29 @@ const router = createRouter({
           component: () => import('@/views/DashboardView.vue')
         },
         {
+          path: 'accounts',
+          name: 'accounts',
+          component: () => import('@/views/AccountsView.vue')
+        },
+        {
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/ProfileView.vue')
+        },
+        {
+          path: 'transactions',
+          name: 'transactions',
+          component: () => import('@/views/TransactionsListView.vue')
+        },
+        {
+          path: 'transactions/new',
+          name: 'transaction-new',
+          component: () => import('@/views/TransactionsView.vue')
+        },
+        {
+          path: 'transactions/adjustment',
+          name: 'transaction-adjustment',
+          component: () => import('@/views/AdjustmentView.vue')
         }
       ]
     },
@@ -38,6 +64,7 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    authStore.logout()
     return { name: 'login' }
   }
   if (to.meta.requiresGuest && authStore.isAuthenticated) {

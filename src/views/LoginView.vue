@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { authApi } from '@/services/api'
+import { authService } from '@/services/auth.service'
+import { scheduleTokenRefresh } from '@/services/token-refresh.service'
+import { useToast } from '@/composables/useToast'
+import { getApiErrorMessage } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth.store'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const toast = useToast()
 const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
@@ -16,17 +21,21 @@ const handleLogin = async () => {
   if (!isLoginEnabled.value) return
   isLoading.value = true
   try {
-    const response = await authApi.post('/login', {
+    const { accessToken, refreshToken } = await authService.login({
       email: email.value,
       password: password.value,
       clientId: import.meta.env.VITE_CLIENT_ID,
       clientSecret: import.meta.env.VITE_CLIENT_SECRET,
     })
-    const {accessToken, refreshToken} = response as any;
-    useAuthStore().setToken(accessToken, refreshToken)
-    router.push('/')
+    if (!accessToken || !refreshToken) {
+      throw new Error('Incomplete login response')
+    }
+    authStore.setToken(accessToken, refreshToken)
+    scheduleTokenRefresh()
+    toast.success('Login successful. Welcome!')
+    router.push({ name: 'dashboard' })
   } catch(error) {
-    console.error(error)
+    toast.error(getApiErrorMessage(error, 'Login failed. Please try again.'))
   } finally {
     isLoading.value = false
   }
@@ -67,18 +76,18 @@ const handleLogin = async () => {
 
         <button 
           type="submit" 
-          class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer"
+          class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer disabled:bg-slate-700 disabled:cursor-not-allowed"
           :disabled="!isLoginEnabled"
         >
-          Masuk
+          {{ isLoading ? 'Processing...' : 'Sign In' }}
         </button>
       </form>
 
 <!-- Navigasi ke Register -->
       <div class="text-center text-xs text-slate-400">
-        Belum punya akun? 
+        Don't have an account? 
         <RouterLink to="/register" class="text-indigo-400 hover:underline font-medium">
-          Daftar di sini
+          Sign up here
         </RouterLink>
       </div>
 

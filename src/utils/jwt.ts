@@ -1,4 +1,4 @@
-export function decodeJwt(token: string): Record<string, any> | null {
+export function decodeJwt<T>(token: string): T | null {
     try {
         const base64Url = token.split('.')[1]
         if (!base64Url) return null
@@ -11,8 +11,8 @@ export function decodeJwt(token: string): Record<string, any> | null {
                 .join('')
         )
 
-        return JSON.parse(jsonPayload)
-    } catch (error) {
-        throw new Error(`Error to decode token jwt: ${error}`)
+        return JSON.parse(jsonPayload) as T
+    } catch {
+        return null
     }
 }

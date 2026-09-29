@@ -12,8 +12,8 @@ const user = ref({
   <div class="space-y-6">
     <!-- Title Page -->
     <div>
-      <h1 class="text-2xl font-bold text-white">Profil Pengguna</h1>
-      <p class="text-sm text-slate-400">Kelola informasi akun dan pengaturan profil Anda.</p>
+      <h1 class="text-2xl font-bold text-white">User Profile</h1>
+      <p class="text-sm text-slate-400">Manage your account information and profile settings.</p>
     </div>
 
     <!-- Profile Card Template -->
@@ -33,7 +33,7 @@ const user = ref({
       <!-- Detail Form Mockup -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Nama Lengkap</label>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
           <input 
             v-model="user.name"
             type="text" 
@@ -57,7 +57,7 @@ const user = ref({
           type="button" 
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
         >
-          Simpan Perubahan
+          Save Changes
         </button>
       </div>
 

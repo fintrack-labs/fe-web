@@ -1,24 +1,80 @@
 import axios from 'axios'
-import { STORAGE_KEY } from '@/constants/storage'
+import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import { useAuthStore } from '@/stores/auth.store'
+import { notifyUnauthorized } from '@/services/session'
+import { refreshAccessToken } from '@/services/token-refresh.service'
+import { getAccessToken } from '@/utils/token'
 
-export const authApi = axios.create({
-    baseURL: import.meta.env.VITE_AUTH_BASE_URL,
+const SKIP_REFRESH_PATHS = ['/login', '/logout', '/refresh-token']
+
+type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean }
+
+function unwrapAuthEnvelope(body: unknown): unknown {
+  if (
+    body &&
+    typeof body === 'object' &&
+    'statusCode' in body &&
+    'message' in body &&
+    'data' in body
+  ) {
+    return (body as { data: unknown }).data
+  }
+  return body
+}
+
+function createApiClient(baseURL: string, useAuthEnvelope: boolean): AxiosInstance {
+  const client = axios.create({
+    baseURL,
     headers: {
-        'Content-Type': 'application/json'
-    }
-})
+      'Content-Type': 'application/json'
+    },
+    timeout: 10000
+  })
 
-authApi.interceptors.request.use((config) => {
-    const token = localStorage.getItem(STORAGE_KEY.TOKEN)
+  client.interceptors.request.use((config) => {
+    const token = getAccessToken()
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = `Bearer ${token}`
     }
     return config
-})
+  })
 
-authApi.interceptors.response.use(
-    (response) => response.data?.data ?? response.data,
-    (error) => {
+  client.interceptors.response.use(
+    (response) => {
+      if (useAuthEnvelope) {
+        return unwrapAuthEnvelope(response.data)
+      }
+      return response.data
+    },
+    async (error: AxiosError) => {
+      const config = error.config as RetriableConfig | undefined
+      const status = error.response?.status
+
+      if (
+        status !== 401 ||
+        !config ||
+        config._retry ||
+        SKIP_REFRESH_PATHS.some((path) => config.url?.includes(path))
+      ) {
         return Promise.reject(error)
+      }
+
+      config._retry = true
+
+      try {
+        const accessToken = await refreshAccessToken()
+        config.headers.Authorization = `Bearer ${accessToken}`
+        return await client(config)
+      } catch (refreshError) {
+        useAuthStore().logout()
+        notifyUnauthorized()
+        return Promise.reject(refreshError)
+      }
     }
-)
+  )
+
+  return client
+}
+
+export const authApi = createApiClient(import.meta.env.VITE_AUTH_BASE_URL, true)
+export const coreApi = createApiClient(import.meta.env.VITE_API_BASE_URL, false)
