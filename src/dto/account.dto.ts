@@ -20,3 +20,11 @@ export interface AccountResponseDto {
     accountNumber: string | null
     currency: CurrencyType
 }
+
+export interface CreateAccountRequestDto {
+    name: string
+    type: AccountType
+    currency: CurrencyType
+    initialBalance?: number
+    accountNumber?: string
+}

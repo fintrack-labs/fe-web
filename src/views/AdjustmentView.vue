@@ -138,17 +138,17 @@ watch(
     
     <!-- Header -->
     <div class="space-y-1">
-      <h1 class="text-2xl font-bold text-white">Balance Adjustment</h1>
-      <p class="text-sm text-slate-400">
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Balance Adjustment</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
         Match the account balance with your real balance. The difference is recorded as an adjustment transaction.
       </p>
     </div>
 
-    <div v-if="isLoadingOptions" class="text-sm text-slate-400">Loading accounts...</div>
+    <div v-if="isLoadingOptions" class="text-sm text-slate-500 dark:text-slate-400">Loading accounts...</div>
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-5">
       <div>
-        <label class="block text-xs font-medium text-slate-300 mb-1">Account</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
         <SelectField
           v-model="accountId"
           :options="accountOptions"
@@ -158,19 +158,19 @@ watch(
 
       <div
         v-if="selectedAccount"
-        class="rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-sm space-y-1"
+        class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm space-y-1 dark:border-slate-800 dark:bg-slate-900"
       >
-        <p class="text-slate-400">
+        <p class="text-slate-600 dark:text-slate-400">
           Current balance
-          <span class="text-slate-200 font-medium">
+          <span class="font-medium text-slate-900 dark:text-slate-200">
             {{ formatCurrency(currentBalance ?? 0, selectedAccount.currency) }}
           </span>
         </p>
-        <p v-if="delta !== null" class="text-slate-400">
+        <p v-if="delta !== null" class="text-slate-600 dark:text-slate-400">
           Difference
           <span
             class="font-medium"
-            :class="delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-300'"
+            :class="delta > 0 ? 'text-emerald-600 dark:text-emerald-400' : delta < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'"
           >
             {{ delta > 0 ? '+' : '' }}{{ formatCurrency(delta, selectedAccount.currency) }}
             ({{ delta > 0 ? 'increase' : delta < 0 ? 'decrease' : 'no change' }})
@@ -179,7 +179,7 @@ watch(
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-300 mb-1">Actual Balance</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Actual Balance</label>
         <input
           :value="actualBalance"
           @input="onActualBalanceInput"
@@ -187,18 +187,18 @@ watch(
           inputmode="decimal"
           autocomplete="off"
           placeholder="0,00"
-          class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+          class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
         />
-        <p class="text-xs text-slate-500 mt-1">At most 2 decimal places, must be greater than 0.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">At most 2 decimal places, must be greater than 0.</p>
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-300 mb-1">Reason</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Reason</label>
         <input
           v-model="reason"
           type="text"
           placeholder="Example: rounding correction, transfer mismatch"
-          class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+          class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
         />
       </div>
 
@@ -206,13 +206,13 @@ watch(
         <button
           type="submit"
           :disabled="!isSubmitEnabled"
-          class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer disabled:bg-slate-700 disabled:cursor-not-allowed"
+          class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed dark:disabled:bg-slate-700"
         >
           {{ isSubmitting ? 'Saving...' : 'Save Adjustment' }}
         </button>
         <RouterLink
           :to="{ name: 'transaction-new' }"
-          class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg text-sm text-center transition-colors"
+          class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-sm text-center transition-colors dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
         >
           New Transaction
         </RouterLink>
@@ -225,9 +225,9 @@ watch(
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       @click.self="addAnotherAdjustment"
     >
-      <div class="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-        <h2 class="text-lg font-semibold text-white">Adjustment saved</h2>
-        <p class="mt-1 text-sm text-slate-400">Do you want to adjust another account?</p>
+      <div class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Adjustment saved</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Do you want to adjust another account?</p>
         <div class="mt-5 space-y-2">
           <button
             type="button"
@@ -239,7 +239,7 @@ watch(
           <button
             type="button"
             @click="goToAccountList"
-            class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-slate-300 transition-colors hover:bg-slate-700"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             View accounts
           </button>

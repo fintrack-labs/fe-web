@@ -63,7 +63,11 @@ const SUMMARY_OPTIONS = computed(() => {
 })
 
 const balanceClass = (balance: number) =>
-    balance < 0 ? 'text-rose-400' : balance > 0 ? 'text-emerald-400' : 'text-slate-400'
+    balance < 0
+        ? 'text-rose-600 dark:text-rose-400'
+        : balance > 0
+          ? 'text-emerald-600 dark:text-emerald-400'
+          : 'text-slate-500 dark:text-slate-400'
 
 const sortIndicator = (key: string) =>
     sortKey.value === key ? (sortOrder.value === 'ASC' ? '↑' : '↓') : ''
@@ -141,19 +145,19 @@ onBeforeUnmount(() => {
 <template>
     <div class="space-y-6">
         <div class="space-y-1">
-            <h1 class="text-2xl font-bold text-white">Accounts</h1>
-            <p class="text-sm text-slate-400">All your accounts with the latest recorded balance.</p>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Accounts</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">All your accounts with the latest recorded balance.</p>
         </div>
 
         <div v-if="SUMMARY_OPTIONS.length > 0" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div
                 v-for="summary in SUMMARY_OPTIONS"
                 :key="summary.currency"
-                class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3"
+                class="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
             >
-                <p class="text-xs font-medium text-slate-400">
+                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Total balance
-                    <span class="text-slate-500">· {{ summary.currency }}</span>
+                    <span class="text-slate-500 dark:text-slate-500">· {{ summary.currency }}</span>
                 </p>
                 <p
                     class="mt-1 text-xl font-semibold tabular-nums"
@@ -163,9 +167,9 @@ onBeforeUnmount(() => {
                 </p>
             </div>
 
-            <div class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3">
-                <p class="text-xs font-medium text-slate-400">Accounts</p>
-                <p class="mt-1 text-xl font-semibold tabular-nums text-white">
+            <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Accounts</p>
+                <p class="mt-1 text-xl font-semibold tabular-nums text-slate-900 dark:text-white">
                     {{ accounts.length }}
                 </p>
             </div>
@@ -175,15 +179,21 @@ onBeforeUnmount(() => {
             <button
                 type="button"
                 @click="reset"
-                class="hidden rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700 sm:block"
+                class="hidden rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:block"
             >
                 Reset widths
             </button>
+            <RouterLink
+                :to="{ name: 'account-new' }"
+                class="rounded-lg bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+            >
+                New Account
+            </RouterLink>
             <button
                 type="button"
                 @click="isFilterOpen = !isFilterOpen"
-                class="relative rounded-lg border border-slate-700 bg-slate-800 p-2 text-slate-300 transition-colors hover:bg-slate-700 md:hidden"
-                :class="isFilterOpen ? 'border-indigo-500 text-white' : ''"
+                class="relative rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 md:hidden"
+                :class="isFilterOpen ? 'border-indigo-500 text-indigo-500 dark:text-white' : ''"
                 :aria-expanded="isFilterOpen"
                 aria-label="Toggle filters"
             >
@@ -200,37 +210,37 @@ onBeforeUnmount(() => {
         </div>
 
         <div
-            class="flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-3 md:flex-row md:items-end md:border-0 md:bg-transparent md:p-0"
+            class="flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/50 md:flex-row md:items-end md:border-0 md:bg-transparent md:p-0"
             :class="isFilterOpen ? 'flex' : 'hidden md:flex'"
         >
             <div class="w-full md:w-64">
-                <label class="block text-xs font-medium text-slate-300 mb-1">Search</label>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Search</label>
                 <input
                     v-model="search"
                     type="search"
                     placeholder="Account name"
-                    class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                 />
             </div>
             <div class="w-full md:w-44">
-                <label class="block text-xs font-medium text-slate-300 mb-1">Type</label>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Type</label>
                 <SelectField v-model="typeFilter" :options="TYPE_OPTIONS" />
             </div>
             <div class="w-full md:w-40">
-                <label class="block text-xs font-medium text-slate-300 mb-1">Currency</label>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Currency</label>
                 <SelectField v-model="currencyFilter" :options="CURRENCY_OPTIONS" />
             </div>
             <button
                 v-if="isActiveFilter"
                 type="button"
                 @click="clearFilters"
-                class="self-start px-1 py-2 text-xs text-indigo-400 transition-colors hover:text-indigo-300 md:self-auto"
+                class="self-start px-1 py-2 text-xs text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 md:self-auto"
             >
                 Clear filters
             </button>
         </div>
 
-        <div class="rounded-xl border border-slate-800 bg-slate-900">
+        <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <div
                 class="thin-scrollbar overflow-x-auto overscroll-x-contain"
                 :class="isScrolling ? 'is-scrolling' : ''"
@@ -244,15 +254,15 @@ onBeforeUnmount(() => {
                             :style="{ width: `${column.width}px` }"
                         />
                     </colgroup>
-                    <thead class="bg-slate-900 text-slate-300">
+                    <thead class="bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                         <tr>
                             <th
                                 v-for="column in columns"
                                 :key="column.key"
                                 scope="col"
-                                class="relative border-b border-slate-800 px-4 py-2.5 font-medium select-none"
+                                class="relative border-b border-slate-200 px-4 py-2.5 font-medium select-none dark:border-slate-800"
                                 :class="[
-                                    column.sortable ? 'cursor-pointer hover:text-white' : '',
+                                    column.sortable ? 'cursor-pointer hover:text-slate-900 dark:hover:text-white' : '',
                                     column.align === 'right' ? 'text-right' : 'text-left'
                                 ]"
                                 @click="column.sortable && toggleSort(column.key)"
@@ -262,7 +272,7 @@ onBeforeUnmount(() => {
                                     :class="column.align === 'right' ? 'flex-row-reverse' : ''"
                                 >
                                     {{ column.label }}
-                                    <span v-if="sortIndicator(column.key)" class="text-[10px] text-indigo-400">
+                                    <span v-if="sortIndicator(column.key)" class="text-[10px] text-indigo-600 dark:text-indigo-400">
                                         {{ sortIndicator(column.key) }}
                                     </span>
                                 </span>
@@ -280,11 +290,11 @@ onBeforeUnmount(() => {
                         <tr
                             v-for="account in accounts"
                             :key="account.id"
-                            class="border-b border-slate-800/60 last:border-b-0 hover:bg-slate-800/40"
+                            class="border-b border-slate-200/60 last:border-b-0 hover:bg-slate-100/60 dark:border-slate-800/60 dark:hover:bg-slate-800/40"
                         >
                             <td class="px-4 py-3">
-                                <p class="font-medium text-white">{{ account.name }}</p>
-                                <p v-if="account.accountNumber" class="text-xs text-slate-500">
+                                <p class="font-medium text-slate-900 dark:text-white">{{ account.name }}</p>
+                                <p v-if="account.accountNumber" class="text-xs text-slate-500 dark:text-slate-500">
                                     {{ account.accountNumber }}
                                 </p>
                             </td>
@@ -306,7 +316,7 @@ onBeforeUnmount(() => {
                                 <button
                                     type="button"
                                     @click="goToAdjustment(account)"
-                                    class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-200 transition-colors hover:border-indigo-500 hover:bg-indigo-500/10 hover:text-white"
+                                    class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition-colors hover:border-indigo-500 hover:bg-indigo-500/10 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-white"
                                 >
                                     Adjust
                                 </button>
@@ -316,10 +326,10 @@ onBeforeUnmount(() => {
                 </table>
             </div>
 
-            <p v-if="isLoading" class="px-4 py-6 text-center text-sm text-slate-400">
+            <p v-if="isLoading" class="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
                 Loading accounts...
             </p>
-            <p v-else-if="accounts.length === 0" class="px-4 py-6 text-center text-sm text-slate-400">
+            <p v-else-if="accounts.length === 0" class="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
                 No account found.
             </p>
         </div>

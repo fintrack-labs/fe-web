@@ -55,14 +55,15 @@ src/
 ├── assets/main.css          # Tailwind directives + custom utilities (thin-scrollbar, etc.)
 ├── components/              # pure reusable components (no API state)
 │   ├── SelectField.vue      # custom dropdown: auto placement/flip, keyboard nav, scroll-safe
-│   ├── Sidebar.vue          # dark-themed navigation
+│   ├── Sidebar.vue          # collapsible grouped navigation (Account, Transaction)
 │   └── ToastHost.vue        # renders toast notifications
 ├── composables/             # reusable composables (local state + lifecycle)
 │   ├── useToast.ts          # toast notifications (global)
 │   ├── useAmountField.ts    # amount input: id-ID formatting, deletion detection
 │   ├── useResizableColumns.ts # tables with resizable columns + localStorage persistence
 │   ├── useScrollIdle.ts     # detects active vs idle scrolling (for slim scrollbars)
-│   └── useHideOnScroll.ts   # hides/shows elements on scroll (e.g. header/list)
+│   ├── useHideOnScroll.ts   # hides/shows elements on scroll (e.g. header/list)
+│   └── useFontScale.ts      # root font size (sm/md/lg) applied to <html> rem base
 ├── constants/storage.ts     # localStorage keys (token, refresh token, user)
 ├── dto/                     # type contracts replicated from the backend (req & res)
 │   ├── auth.dto.ts          # login/register/refresh/ApiEnvelope
@@ -77,7 +78,7 @@ src/
 ├── services/                # per-domain API communication layer
 │   ├── api.ts               # Axios client factory + interceptors (token, 401 retry, envelope unwrap)
 │   ├── auth.service.ts      # login/register/me
-│   ├── account.service.ts   # list accounts (+ search/filter/sort params)
+│   ├── account.service.ts   # list + create accounts (search/filter/sort params)
 │   ├── category.service.ts  # transaction categories
 │   ├── transaction.service.ts # create, list, adjust balance
 │   ├── token-refresh.service.ts # proactive refresh & single-flight refresh
@@ -96,10 +97,11 @@ src/
     ├── LoginView.vue / RegisterView.vue
     ├── DashboardView.vue    # KPIs, daily chart, monthly comparison (mock data)
     ├── AccountsView.vue     # account list, balance summary, filters, resizable table
+    ├── AccountCreateView.vue # create-account form (name, type, currency, initial balance)
     ├── TransactionsView.vue # create-transaction form (with "add another / view list" dialog)
     ├── TransactionsListView.vue # full transaction list (mobile filters, resizable columns)
     ├── AdjustmentView.vue   # account balance adjustment (actual balance)
-    └── ProfileView.vue
+    └── ProfileView.vue      # profile mockup + font size control (sm/md/lg)
 ```
 
 ## External Libraries — When and Under What Conditions They Are Used

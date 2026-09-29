@@ -176,18 +176,18 @@ onBeforeUnmount(() => {
         <button
             type="button"
             :disabled="disabled"
-            class="flex w-full items-center justify-between gap-2 rounded-lg border bg-slate-800 px-3 py-2 text-left text-sm text-white focus:border-indigo-500 focus:outline-none disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-400"
-            :class="isOpen ? 'border-indigo-500' : 'border-slate-700'"
+            class="flex w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-left text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:text-white disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:border-slate-800 dark:disabled:bg-slate-900"
+            :class="isOpen ? 'border-indigo-500' : 'border-slate-300 dark:border-slate-700'"
             :aria-expanded="isOpen"
             aria-haspopup="listbox"
             @click="toggle"
             @keydown="handleKeydown"
         >
-            <span class="truncate" :class="selectedLabel ? '' : 'text-slate-500'">
+            <span class="truncate" :class="selectedLabel ? '' : 'text-slate-400 dark:text-slate-500'">
                 {{ selectedLabel || placeholder }}
             </span>
             <svg
-                class="h-4 w-4 shrink-0 text-slate-400 transition-transform"
+                class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform"
                 :class="isOpen ? 'rotate-180' : ''"
                 viewBox="0 0 20 20"
                 fill="none"
@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
             <ul
                 v-if="isOpen"
                 ref="list"
-                class="select-field-list thin-scrollbar absolute z-30 w-full touch-pan-y overflow-y-auto overscroll-contain rounded-xl border border-slate-700/70 bg-slate-900/95 p-1 shadow-2xl shadow-black/50 backdrop-blur-sm ring-1 ring-white/5"
+                class="select-field-list thin-scrollbar absolute z-30 w-full touch-pan-y overflow-y-auto overscroll-contain rounded-xl border border-slate-300/70 bg-white/95 p-1 shadow-2xl shadow-black/10 backdrop-blur-sm ring-1 ring-slate-900/5 dark:border-slate-700/70 dark:bg-slate-900/95 dark:shadow-black/50 dark:ring-white/5"
                 :class="[
                     placement === 'top' ? 'bottom-full mb-1' : 'mt-1',
                     isListScrolling ? 'is-scrolling' : ''
@@ -216,16 +216,16 @@ onBeforeUnmount(() => {
                     v-for="(option, index) in options"
                     :key="option.value"
                     role="option"
-                    class="flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-sm text-slate-200 transition-colors duration-100 hover:bg-slate-800 hover:text-white"
+                    class="flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-sm text-slate-700 transition-colors duration-100 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                     :class="[
                         option.disabled
-                            ? 'cursor-not-allowed hover:bg-transparent hover:text-slate-200'
+                            ? 'cursor-not-allowed hover:bg-transparent hover:text-slate-700 dark:hover:text-slate-200'
                             : '',
                         index === activeIndex && !option.disabled && option.value !== modelValue
-                            ? 'bg-slate-800 text-white'
+                            ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
                             : '',
                         option.value === modelValue
-                            ? 'bg-indigo-500/10 font-medium text-indigo-300'
+                            ? 'bg-indigo-500/10 font-medium text-indigo-600 dark:text-indigo-300'
                             : ''
                     ]"
                     :data-active="index === activeIndex && !option.disabled ? 'true' : 'false'"
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
                     <span class="truncate">{{ option.label }}</span>
                     <svg
                         v-if="option.value === modelValue"
-                        class="h-3.5 w-3.5 shrink-0 text-indigo-400"
+                        class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400"
                         viewBox="0 0 20 20"
                         fill="none"
                         stroke="currentColor"

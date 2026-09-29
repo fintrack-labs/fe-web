@@ -5,8 +5,11 @@ import App from './App.vue'
 import router from './router'
 import { setUnauthorizedHandler } from '@/services/session'
 import { scheduleTokenRefresh } from '@/services/token-refresh.service'
+import { applyFontScale } from '@/composables/useFontScale'
 
 import '@/assets/main.css'
+
+applyFontScale()
 
 const app = createApp(App)
 

@@ -3,12 +3,14 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
 import { useHideOnScroll } from '@/composables/useHideOnScroll'
+import { useTheme } from '@/composables/useTheme'
 import { STORAGE_KEY } from '@/constants/storage'
 
 const mainRef = ref<HTMLElement | null>(null)
 
 const route = useRoute()
 const isHeaderHidden = useHideOnScroll(mainRef)
+const { isDark: isDarkMode, cycleTheme: cycleThemeMode } = useTheme()
 
 const drawerQuery = window.matchMedia('(min-width: 768px)')
 const desktopQuery = window.matchMedia('(min-width: 1200px)')
@@ -83,11 +85,11 @@ const showMenuButton = computed(() => isDrawer.value || isDesktop.value)
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-slate-950 font-sans text-slate-100">
+  <div class="min-h-screen flex flex-col bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     
     <!-- 1. HEADER (Atas, Menghilang saat scroll ke bawah) -->
     <header 
-      class="fixed top-0 inset-x-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:px-6 z-40 transition-transform duration-300 ease-in-out"
+      class="fixed top-0 inset-x-0 h-16 bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 z-40 transition-transform duration-300 ease-in-out"
       :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
     >
       <div class="flex items-center gap-3">
@@ -96,7 +98,7 @@ const showMenuButton = computed(() => isDrawer.value || isDesktop.value)
           v-if="showMenuButton"
           @click="toggleSidebar"
           type="button" 
-          class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none cursor-pointer"
+          class="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 focus:outline-none cursor-pointer"
           aria-label="Toggle Sidebar"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,11 +106,29 @@ const showMenuButton = computed(() => isDrawer.value || isDesktop.value)
           </svg>
         </button>
 
-        <span class="font-bold text-white text-lg">App Logo</span>
+        <span class="font-bold text-slate-900 dark:text-white text-lg">App Logo</span>
       </div>
 
-      <div class="text-xs text-slate-400">
-        Status: <span class="text-emerald-400 font-medium">Online</span>
+      <div class="flex items-center gap-4">
+        <!-- Tombol Toggle Tema -->
+        <button 
+          @click="cycleThemeMode"
+          type="button"
+          class="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 focus:outline-none cursor-pointer"
+          :aria-label="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+          :title="isDarkMode ? 'Light mode' : 'Dark mode'"
+        >
+          <svg v-if="isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1.5m0 15V21m9-9h-1.5M4.5 12H3m15.364-6.364l-1.06 1.06M7.696 17.304l-1.061 1.061m0-12.73l1.061 1.06M7.696 7.696l1.061 1.061M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/>
+          </svg>
+          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75a9.75 9.75 0 01-9.75-9.75c0-1.49.333-2.905.933-4.168A9.75 9.75 0 1021.752 15.002z"/>
+          </svg>
+        </button>
+
+        <div class="text-xs text-slate-500 dark:text-slate-400">
+          Status: <span class="text-emerald-500 dark:text-emerald-400 font-medium">Online</span>
+        </div>
       </div>
     </header>
 
@@ -136,14 +156,14 @@ const showMenuButton = computed(() => isDrawer.value || isDesktop.value)
       </div>
 
       <!-- Main Body / Content Area (Kanan / Penuh di Mobile) -->
-      <main ref="mainRef" class="flex-1 p-4 md:p-6 overflow-y-auto bg-slate-950 w-full">
+      <main ref="mainRef" class="flex-1 p-4 md:p-6 overflow-y-auto bg-slate-100 dark:bg-slate-950 w-full">
         <RouterView />
       </main>
 
     </div>
 
     <!-- 3. FOOTER (Bawah, Membentang Penuh) -->
-    <footer class="h-12 bg-slate-900 border-t border-slate-800 flex items-center justify-between px-4 md:px-6 text-xs text-slate-500 shrink-0 z-30">
+    <footer class="h-12 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 text-xs text-slate-500 dark:text-slate-500 shrink-0 z-30">
       <p>&copy; 2026 App Template. All rights reserved.</p>
       <p>v1.0.0</p>
     </footer>

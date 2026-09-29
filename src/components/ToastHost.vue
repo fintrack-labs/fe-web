@@ -4,9 +4,9 @@ import { useToast } from '@/composables/useToast'
 const { toasts, dismiss } = useToast()
 
 const styles = {
-  success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
-  error: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
-  info: 'bg-slate-800 border-slate-700 text-slate-200'
+  success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-300',
+  error: 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-300',
+  info: 'bg-slate-100 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200'
 }
 </script>
 

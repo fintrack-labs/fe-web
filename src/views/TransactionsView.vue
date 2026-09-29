@@ -232,21 +232,21 @@ onMounted(loadOptions)
     
     <!-- Header -->
     <div class="space-y-1">
-      <h1 class="text-2xl font-bold text-white">New Transaction</h1>
-      <p class="text-sm text-slate-400">Record income, expense, or a transfer between accounts.</p>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">New Transaction</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Record income, expense, or a transfer between accounts.</p>
     </div>
 
-    <div v-if="isLoadingOptions" class="text-sm text-slate-400">Loading accounts and categories...</div>
+    <div v-if="isLoadingOptions" class="text-sm text-slate-500 dark:text-slate-400">Loading accounts and categories...</div>
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-5">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Transaction Type</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Transaction Type</label>
           <SelectField v-model="type" :options="TRANSACTION_TYPES" />
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Amount</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
           <input
             :value="amount"
             @input="onAmountInput"
@@ -254,14 +254,14 @@ onMounted(loadOptions)
             inputmode="decimal"
             autocomplete="off"
             placeholder="0,00"
-            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
           />
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div v-if="needsSource">
-          <label class="block text-xs font-medium text-slate-300 mb-1">Source Account</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Source Account</label>
           <SelectField
             v-model="sourceAccountId"
             :options="accountOptions"
@@ -270,7 +270,7 @@ onMounted(loadOptions)
         </div>
 
         <div v-if="needsDestination">
-          <label class="block text-xs font-medium text-slate-300 mb-1">Destination Account</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Destination Account</label>
           <SelectField
             v-model="destinationAccountId"
             :options="accountOptions"
@@ -281,19 +281,19 @@ onMounted(loadOptions)
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Category</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Category</label>
           <SelectField v-model="categoryId" :options="categoryOptions" />
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Payment Method</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Payment Method</label>
           <input
             :value="paymentMethodLabel"
             type="text"
             disabled
-            class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-sm cursor-not-allowed"
+            class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-sm cursor-not-allowed dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400"
           />
-          <p class="text-xs text-slate-500 mt-1">
+          <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">
             Follows the type of
             <span v-if="paymentMethodSourceAccount">
               {{ type === TransactionType.INCOME ? 'destination' : 'source' }}
@@ -306,63 +306,63 @@ onMounted(loadOptions)
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Transaction Date</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Transaction Date</label>
           <input
             v-model="transactionDate"
             type="datetime-local"
-            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
           />
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Merchant</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Merchant</label>
           <input
             v-model="merchantName"
             type="text"
             maxlength="100"
             placeholder="Merchant name"
-            class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
           />
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-300 mb-1">Description</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Description</label>
         <textarea
           v-model="description"
           rows="2"
           placeholder="Short transaction note"
-          class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 resize-y"
+          class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-y"
         ></textarea>
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-300 mb-1">Note</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
         <input
           v-model="note"
           type="text"
           placeholder="Internal note"
-          class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+          class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
         />
       </div>
 
       <div class="space-y-1">
-        <label class="flex items-center gap-2 text-sm text-slate-500 cursor-not-allowed">
+        <label class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-500 cursor-not-allowed">
           <input
             v-model="isRecurring"
             type="checkbox"
             disabled
-            class="w-4 h-4 rounded border-slate-600 bg-slate-800 text-indigo-600 opacity-60 cursor-not-allowed"
+            class="w-4 h-4 rounded border-slate-300 bg-slate-100 text-indigo-600 opacity-60 cursor-not-allowed dark:border-slate-600 dark:bg-slate-800"
           />
           Recurring transaction
         </label>
-        <p class="text-xs text-slate-500">Recurring transaction feature is not available yet.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-500">Recurring transaction feature is not available yet.</p>
       </div>
 
       <button
         type="submit"
         :disabled="!isSubmitEnabled"
-        class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer disabled:bg-slate-700 disabled:cursor-not-allowed"
+        class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed dark:disabled:bg-slate-700"
       >
         {{ isSubmitting ? 'Saving...' : 'Save Transaction' }}
       </button>
@@ -374,9 +374,9 @@ onMounted(loadOptions)
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       @click.self="addAnotherTransaction"
     >
-      <div class="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-        <h2 class="text-lg font-semibold text-white">Transaction saved</h2>
-        <p class="mt-1 text-sm text-slate-400">Do you want to add another transaction?</p>
+      <div class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Transaction saved</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Do you want to add another transaction?</p>
         <div class="mt-5 space-y-2">
           <button
             type="button"
@@ -388,7 +388,7 @@ onMounted(loadOptions)
           <button
             type="button"
             @click="goToTransactionList"
-            class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-slate-300 transition-colors hover:bg-slate-700"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             View transactions
           </button>

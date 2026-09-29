@@ -150,10 +150,10 @@ function typeLabel(type: TransactionType): string {
 }
 
 function typeClass(type: TransactionType): string {
-    if (type === TransactionType.INCOME) return 'text-emerald-400'
-    if (type === TransactionType.EXPENSE) return 'text-rose-400'
-    if (type === TransactionType.ADJUSTMENT) return 'text-indigo-400'
-    return 'text-slate-300'
+    if (type === TransactionType.INCOME) return 'text-emerald-600 dark:text-emerald-400'
+    if (type === TransactionType.EXPENSE) return 'text-rose-600 dark:text-rose-400'
+    if (type === TransactionType.ADJUSTMENT) return 'text-indigo-600 dark:text-indigo-400'
+    return 'text-slate-600 dark:text-slate-300'
 }
 
 function amountText(transaction: TransactionResponseDto): string {
@@ -164,9 +164,9 @@ function amountText(transaction: TransactionResponseDto): string {
 }
 
 const amountClass = (transaction: TransactionResponseDto): string => {
-    if (transaction.type === TransactionType.INCOME) return 'text-emerald-400'
-    if (transaction.type === TransactionType.EXPENSE) return 'text-rose-400'
-    return 'text-slate-200'
+    if (transaction.type === TransactionType.INCOME) return 'text-emerald-600 dark:text-emerald-400'
+    if (transaction.type === TransactionType.EXPENSE) return 'text-rose-600 dark:text-rose-400'
+    return 'text-slate-700 dark:text-slate-200'
 }
 
 function toggleSort(key: string): void {
@@ -250,16 +250,16 @@ onMounted(async () => {
 <template>
   <div class="space-y-6">
     <div class="space-y-1">
-      <h1 class="text-2xl font-bold text-white">Transactions</h1>
-      <p class="text-sm text-slate-400">Browse every recorded transaction. Drag a column edge to resize.</p>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Browse every recorded transaction. Drag a column edge to resize.</p>
     </div>
 
     <div class="flex flex-wrap items-end gap-3">
       <button
         type="button"
         @click="isFilterOpen = !isFilterOpen"
-        class="relative order-1 rounded-lg border border-slate-700 bg-slate-800 p-2 text-slate-300 transition-colors hover:bg-slate-700 md:hidden"
-        :class="isFilterOpen ? 'border-indigo-500 text-white' : ''"
+        class="relative order-1 rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 md:hidden"
+        :class="isFilterOpen ? 'border-indigo-500 text-indigo-500 dark:text-white' : ''"
         :aria-expanded="isFilterOpen"
         aria-label="Toggle filters"
       >
@@ -275,26 +275,26 @@ onMounted(async () => {
       </button>
 
       <div class="order-2 w-full md:w-48" :class="isFilterOpen ? 'block' : 'hidden md:block'">
-        <label class="block text-xs font-medium text-slate-300 mb-1">Type</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Type</label>
         <SelectField v-model="typeFilter" :options="TYPE_FILTER_OPTIONS" />
       </div>
       <div class="order-3 w-full md:w-48" :class="isFilterOpen ? 'block' : 'hidden md:block'">
-        <label class="block text-xs font-medium text-slate-300 mb-1">Category</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Category</label>
         <SelectField v-model="categoryFilter" :options="categoryOptions" />
       </div>
       <div class="order-4 w-full md:w-48" :class="isFilterOpen ? 'block' : 'hidden md:block'">
-        <label class="block text-xs font-medium text-slate-300 mb-1">Payment Method</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Payment Method</label>
         <SelectField v-model="paymentMethodFilter" :options="PAYMENT_METHOD_FILTER_OPTIONS" />
       </div>
       <div class="order-5 w-full md:w-32" :class="isFilterOpen ? 'block' : 'hidden md:block'">
-        <label class="block text-xs font-medium text-slate-300 mb-1">Rows</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Rows</label>
         <SelectField v-model="limit" :options="LIMIT_OPTIONS" />
       </div>
       <button
         v-if="activeFilterCount > 0"
         type="button"
         @click="clearFilters"
-        class="order-7 self-start px-1 py-2 text-xs text-indigo-400 transition-colors hover:text-indigo-300 md:self-auto"
+        class="order-7 self-start px-1 py-2 text-xs text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 md:self-auto"
       >
         Clear filters
       </button>
@@ -303,7 +303,7 @@ onMounted(async () => {
         <button
           type="button"
           @click="reset"
-          class="hidden rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700 sm:block"
+          class="hidden rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:block"
         >
           Reset widths
         </button>
@@ -317,7 +317,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="rounded-xl border border-slate-800 bg-slate-900">
+    <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div
         class="thin-scrollbar overflow-x-auto overscroll-x-contain"
         :class="isTableScrolling ? 'is-scrolling' : ''"
@@ -327,22 +327,22 @@ onMounted(async () => {
           <colgroup>
             <col v-for="column in columns" :key="column.key" :style="{ width: `${column.width}px` }" />
           </colgroup>
-          <thead class="bg-slate-900 text-slate-300">
+          <thead class="bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-300">
             <tr>
               <th
                 v-for="column in columns"
                 :key="column.key"
                 scope="col"
-                class="relative border-b border-slate-800 px-3 py-2.5 font-medium select-none"
+                class="relative border-b border-slate-200 px-3 py-2.5 font-medium select-none dark:border-slate-800"
                 :class="[
-                  column.sortable ? 'cursor-pointer hover:text-white' : '',
+                  column.sortable ? 'cursor-pointer hover:text-slate-900 dark:hover:text-white' : '',
                   column.align === 'right' ? 'text-right' : 'text-left'
                 ]"
                 @click="column.sortable && toggleSort(column.key)"
               >
                 <span class="inline-flex items-center gap-1" :class="column.align === 'right' ? 'flex-row-reverse' : ''">
                   {{ column.label }}
-                  <span v-if="sortIndicator(column.key)" class="text-[10px] text-indigo-400">
+                  <span v-if="sortIndicator(column.key)" class="text-[10px] text-indigo-600 dark:text-indigo-400">
                     {{ sortIndicator(column.key) }}
                   </span>
                 </span>
@@ -356,9 +356,9 @@ onMounted(async () => {
               </th>
             </tr>
           </thead>
-          <tbody v-if="transactions.length" class="divide-y divide-slate-800">
-            <tr v-for="transaction in transactions" :key="transaction.id" class="hover:bg-slate-800/50">
-              <td class="px-3 py-2 text-slate-300 whitespace-nowrap">
+          <tbody v-if="transactions.length" class="divide-y divide-slate-200 dark:divide-slate-800">
+            <tr v-for="transaction in transactions" :key="transaction.id" class="hover:bg-slate-100/60 dark:hover:bg-slate-800/50">
+              <td class="px-3 py-2 text-slate-600 dark:text-slate-300 whitespace-nowrap">
                 {{ formatDate(transaction.transactionDate) }}
               </td>
               <td class="px-3 py-2 font-medium" :class="typeClass(transaction.type)">
@@ -367,28 +367,28 @@ onMounted(async () => {
               <td class="px-3 py-2 text-right font-medium whitespace-nowrap" :class="amountClass(transaction)">
                 {{ amountText(transaction) }}
               </td>
-              <td class="px-3 py-2 text-slate-400">
+              <td class="px-3 py-2 text-slate-500 dark:text-slate-400">
                 {{ transaction.paymentMethod }}
               </td>
-              <td class="px-3 py-2 text-slate-400 truncate">{{ categoryLabel(transaction.categoryId) }}</td>
-              <td class="px-3 py-2 text-slate-300 truncate">{{ transaction.merchantName || '-' }}</td>
-              <td class="px-3 py-2 text-slate-400 truncate">{{ accountLabel(transaction.sourceAccountId) }}</td>
-              <td class="px-3 py-2 text-slate-400 truncate">{{ accountLabel(transaction.destinationAccountId) }}</td>
-              <td class="px-3 py-2 text-slate-400 truncate">{{ transaction.description || '-' }}</td>
-              <td class="px-3 py-2 text-slate-500 truncate">{{ transaction.note || '-' }}</td>
+              <td class="px-3 py-2 text-slate-500 dark:text-slate-400 truncate">{{ categoryLabel(transaction.categoryId) }}</td>
+              <td class="px-3 py-2 text-slate-600 dark:text-slate-300 truncate">{{ transaction.merchantName || '-' }}</td>
+              <td class="px-3 py-2 text-slate-500 dark:text-slate-400 truncate">{{ accountLabel(transaction.sourceAccountId) }}</td>
+              <td class="px-3 py-2 text-slate-500 dark:text-slate-400 truncate">{{ accountLabel(transaction.destinationAccountId) }}</td>
+              <td class="px-3 py-2 text-slate-500 dark:text-slate-400 truncate">{{ transaction.description || '-' }}</td>
+              <td class="px-3 py-2 text-slate-400 dark:text-slate-500 truncate">{{ transaction.note || '-' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div v-if="isLoading" class="px-4 py-6 text-center text-sm text-slate-400">Loading transactions...</div>
-      <div v-else-if="!transactions.length" class="px-4 py-6 text-center text-sm text-slate-400">
+      <div v-if="isLoading" class="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">Loading transactions...</div>
+      <div v-else-if="!transactions.length" class="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
         No transactions found.
       </div>
 
       <div
         v-if="pageCount > 0"
-        class="flex flex-col gap-2 border-t border-slate-800 px-4 py-3 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between"
+        class="flex flex-col gap-2 border-t border-slate-200 px-4 py-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between"
       >
         <span>Showing {{ transactions.length }} of {{ totalItems }} transactions</span>
         <div class="flex items-center gap-2">
@@ -396,7 +396,7 @@ onMounted(async () => {
             type="button"
             :disabled="page <= 1 || isLoading"
             @click="page = Math.max(1, page - 1)"
-            class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
             Previous
           </button>
@@ -405,7 +405,7 @@ onMounted(async () => {
             type="button"
             :disabled="page >= pageCount || isLoading"
             @click="page = Math.min(pageCount, page + 1)"
-            class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
             Next
           </button>
