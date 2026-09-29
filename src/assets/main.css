@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.select-none {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.select-field-list {
+    -webkit-overflow-scrolling: touch;
+}
+
+.thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.thin-scrollbar.is-scrolling {
+    scrollbar-color: #475569 transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 9999px;
+}
+
+.thin-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+    background-color: #475569;
+}
