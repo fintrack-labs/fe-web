@@ -1,6 +1,7 @@
 import { ocrApi } from '@/services/api'
 
 export interface OcrAnalysisData {
+    type: 'INCOME' | 'EXPENSE' | 'TRANSFER' | null
     detectedLanguage: string | null
     transactionDate: string | null
     merchantName: string | null
