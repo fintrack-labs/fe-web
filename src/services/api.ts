@@ -22,13 +22,13 @@ function unwrapAuthEnvelope(body: unknown): unknown {
   return body
 }
 
-function createApiClient(baseURL: string, useAuthEnvelope: boolean): AxiosInstance {
+function createApiClient(baseURL: string, useAuthEnvelope: boolean, timeout = 10000): AxiosInstance {
   const client = axios.create({
     baseURL,
     headers: {
       'Content-Type': 'application/json'
     },
-    timeout: 10000
+    timeout
   })
 
   client.interceptors.request.use((config) => {
@@ -56,7 +56,7 @@ function createApiClient(baseURL: string, useAuthEnvelope: boolean): AxiosInstan
         config._retry ||
         SKIP_REFRESH_PATHS.some((path) => config.url?.includes(path))
       ) {
-        return Promise.reject(error)
+        throw error
       }
 
       config._retry = true
@@ -68,7 +68,7 @@ function createApiClient(baseURL: string, useAuthEnvelope: boolean): AxiosInstan
       } catch (refreshError) {
         useAuthStore().logout()
         notifyUnauthorized()
-        return Promise.reject(refreshError)
+        throw refreshError
       }
     }
   )
@@ -78,3 +78,4 @@ function createApiClient(baseURL: string, useAuthEnvelope: boolean): AxiosInstan
 
 export const authApi = createApiClient(import.meta.env.VITE_AUTH_BASE_URL, true)
 export const coreApi = createApiClient(import.meta.env.VITE_API_BASE_URL, false)
+export const ocrApi = createApiClient(import.meta.env.VITE_OCR_SERVICE_URL ?? '', false, 60000)

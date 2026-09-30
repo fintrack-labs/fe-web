@@ -28,6 +28,7 @@ Configuration comes from `.env` / `.env.sample`:
 |---|---|
 | `VITE_API_BASE_URL` | Base URL of the core API (transactions, accounts, categories, etc.) |
 | `VITE_AUTH_BASE_URL` | Base URL of the authentication API (login, register, token refresh) |
+| `VITE_OCR_SERVICE_URL` | Base URL of the OCR service; its CORS allowlist must include the frontend origin |
 | `VITE_CLIENT_ID` / `VITE_CLIENT_SECRET` | OAuth client credentials used for token refresh |
 
 ## Tech Stack
@@ -124,10 +125,11 @@ Used on **page navigation**.
 Used only for **global authentication state** (`stores/auth.store.ts`). Components call `useAuthStore()` to check `isAuthenticated` and invoke `logout()`. Domain data (accounts, categories, transactions) is not stored globally — it is fetched per component.
 
 ### Axios 1.x
-Used for **all HTTP calls to the backend** through `services/api.ts`. Two instances:
+Used for **all HTTP calls to backend services** through `services/api.ts`. Three instances:
 
 - `authApi` → `VITE_AUTH_BASE_URL`, with **envelope unwrapping** — responses shaped `{ statusCode, message, data }` are unwrapped automatically to `data`.
 - `coreApi` → `VITE_API_BASE_URL`, plain responses returned as-is.
+- `ocrApi` → `VITE_OCR_SERVICE_URL`, plain responses returned as-is, with a longer timeout for image analysis.
 
 Specific conditions handled by the interceptors:
 
@@ -151,6 +153,7 @@ Development only — Vue DevTools integration through Vite.
 Pattern: each domain exposes an `XXXService` object calling `coreApi` with its DTOs.
 
 - `transactionService.create(payload)` — used by the create-transaction form (`TransactionsView`).
+- `ocrService.analyzeReceipt(image, locale)` — sends a prepared receipt image to the OCR service; returned values prefill a draft and never save a transaction automatically.
 - `accountService.list(params)` — the backend paginates, so a global `limit: 200` is used and `search/type/currency/sortBy/sortOrder` params are passed through; consumed by `AccountsView`, `AdjustmentView`, and transaction-form dropdowns.
 - `categoryService`, `authService` → analogous per domain.
 - `token-refresh.service` → used both by the `api.ts` interceptor on 401 and for **proactive refresh** via `scheduleTokenRefresh()` in `main.ts`. It guarantees refresh runs once (the `refreshPromise` variable) and keeps a 5-minute margin before token expiry.
