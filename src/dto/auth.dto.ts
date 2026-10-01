@@ -53,6 +53,11 @@ export interface RegisterUserDto {
 
 export interface RegisterResponseDto {
     user: RegisterUserDto
+    activationToken?: string
+}
+
+export interface ActivationResponseDto {
+    message: string
 }
 
 export interface ApiErrorResponse {

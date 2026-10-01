@@ -48,7 +48,7 @@ const handleRegister = async () => {
       email: email.value.trim(),
       password: password.value
     })
-    toast.success(`Registration successful. Account ${result.user.email} is waiting for activation.`)
+    toast.success(`Registration successful. Check ${result.user.email} for the activation link before signing in.`)
     router.push({ name: 'login' })
   } catch (error) {
     toast.error(getApiErrorMessage(error, 'Registration failed. Please try again.'))

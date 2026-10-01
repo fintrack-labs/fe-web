@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useFontScale } from '@/composables/useFontScale'
 import type { FontScaleMode } from '@/composables/useFontScale'
+import { decodeJwt } from '@/utils/jwt'
+import { getAccessToken, type TokenPayload } from '@/utils/token'
 
-const user = ref({
-  name: 'John Doe',
-  email: 'johndoe@example.com',
-  role: 'Senior Developer'
+const user = computed(() => {
+  const token = getAccessToken()
+  return token ? decodeJwt<TokenPayload>(token) : null
 })
+
+const initials = computed(() => user.value?.name?.slice(0, 2).toUpperCase() ?? 'FT')
 
 const FONT_SCALE_OPTIONS: { value: FontScaleMode; label: string; sizeClass: string }[] = [
   { value: 'sm', label: 'Smaller', sizeClass: 'text-sm' },
@@ -20,36 +23,50 @@ const { scale, setFontScale } = useFontScale()
 
 <template>
   <div class="space-y-6">
-    <!-- Title Page -->
     <div>
       <h1 class="text-2xl font-bold text-slate-900 dark:text-white">User Profile</h1>
-      <p class="text-sm text-slate-500 dark:text-slate-400">Manage your account information and profile settings.</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Account information and display preferences.</p>
     </div>
 
-    <!-- Profile Card Template -->
-    <div class="bg-white border border-slate-200 rounded-xl p-6 max-w-2xl space-y-6 dark:bg-slate-900 dark:border-slate-800">
-      
-      <!-- Avatar & Basic Info -->
+    <section class="max-w-2xl space-y-6 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
       <div class="flex items-center gap-4 border-b border-slate-200 pb-6 dark:border-slate-800">
-        <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold text-white">
-          {{ user.name.substring(0, 2).toUpperCase() }}
+        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold text-white">
+          {{ initials }}
         </div>
-        <div>
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ user.name }}</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400">{{ user.role }}</p>
+        <div class="min-w-0">
+          <h2 class="truncate text-lg font-semibold text-slate-900 dark:text-white">
+            {{ user?.name ?? 'Profile unavailable' }}
+          </h2>
+          <p class="truncate text-sm text-slate-500 dark:text-slate-400">
+            {{ user?.email ?? 'Sign in again to load your profile.' }}
+          </p>
         </div>
       </div>
 
-      <!-- Font Size -->
+      <dl v-if="user" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Full Name</dt>
+          <dd class="mt-1 break-words text-sm text-slate-900 dark:text-white">{{ user.name }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Email</dt>
+          <dd class="mt-1 break-all text-sm text-slate-900 dark:text-white">{{ user.email }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">User ID</dt>
+          <dd class="mt-1 break-all font-mono text-sm text-slate-900 dark:text-white">{{ user.sub }}</dd>
+        </div>
+      </dl>
+
       <div>
-        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Font Size</label>
+        <label class="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">Font Size</label>
         <div class="grid grid-cols-3 gap-2">
           <button
             v-for="option in FONT_SCALE_OPTIONS"
             :key="option.value"
             type="button"
             @click="setFontScale(option.value)"
-            class="rounded-lg border px-3 py-2.5 transition-colors cursor-pointer"
+            class="cursor-pointer rounded-lg border px-3 py-2.5 transition-colors"
             :class="
               scale === option.value
                 ? 'border-indigo-500 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
@@ -61,28 +78,6 @@ const { scale, setFontScale } = useFontScale()
           </button>
         </div>
       </div>
-
-      <!-- Detail Form Mockup -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Full Name</label>
-          <input 
-            v-model="user.name"
-            type="text" 
-            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Email</label>
-          <input 
-            v-model="user.email"
-            type="email" 
-            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-          />
-        </div>
-      </div>
-
-    </div>
+    </section>
   </div>
 </template>

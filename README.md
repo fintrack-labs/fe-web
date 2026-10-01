@@ -2,7 +2,7 @@
 
 > Built with **OpenCode** — tagged `#VibeEngineer`.
 
-Single-page application (SPA) for personal finance tracking. This frontend is part of the `fintrack-labs` monorepo, alongside `be-express-ts` (NestJS/Fastify backend) and other modules.
+Single-page application (SPA) for personal finance tracking. This frontend is part of the `fintrack-labs` monorepo, alongside `be-node-ts` (NestJS/Fastify backend) and other modules.
 
 - Language: strict TypeScript, Vue 3 with Composition API (`<script setup>`).
 - All UI labels are in English.
