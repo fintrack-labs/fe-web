@@ -6,6 +6,8 @@ import { categoryService } from '@/services/category.service'
 import { transactionService } from '@/services/transaction.service'
 import { useToast } from '@/composables/useToast'
 import SelectField from '@/components/SelectField.vue'
+import { ocrService } from '@/services/ocr.service'
+import { prepareOcrImage } from '@/utils/prepare-ocr-image'
 import { getApiErrorMessage } from '@/utils/api-error'
 import { parseAmount, countDecimalPlaces } from '@/utils/amount'
 import { toCategoryOptions } from '@/utils/category'
@@ -25,6 +27,9 @@ const categories = ref<CategoryResponseDto[]>([])
 const isLoadingOptions = ref(false)
 const isSubmitting = ref(false)
 const showSavedDialog = ref(false)
+const isAnalyzingReceipt = ref(false)
+const receiptInput = ref<HTMLInputElement | null>(null)
+const receiptFileName = ref('')
 
 const type = ref<TransactionType>(TransactionType.EXPENSE)
 const { value: amount, onInput: onAmountInput } = useAmountField()
@@ -150,6 +155,83 @@ const loadOptions = async () => {
   }
 }
 
+const openReceiptPicker = () => receiptInput.value?.click()
+
+const applyMatchedAccount = (accountId: number | null, currency: string | null) => {
+  if (accountId === null) return
+  const account = accounts.value.find((item) => item.id === accountId)
+  if (!account) return
+  if (currency && account.currency !== currency) {
+    toast.info('The receipt currency differs from the matched account. Please select an account manually.')
+    return
+  }
+  sourceAccountId.value = String(account.id)
+}
+
+const applyMatchedCategory = (categoryIdFromOcr: number | null) => {
+  if (categoryIdFromOcr === null) return
+  const category = toCategoryOptions(categories.value).find(
+    (option) =>
+      option.id === categoryIdFromOcr &&
+      option.type === CategoryType.EXPENSE &&
+      !option.hasChildren
+  )
+  if (category) categoryId.value = String(category.id)
+}
+
+const applyTransactionDate = (value: string | null) => {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return
+  const dateParts = value.split('-').map(Number)
+  const year = dateParts[0]
+  const month = dateParts[1]
+  const day = dateParts[2]
+  if (year === undefined || month === undefined || day === undefined) return
+
+  const parsedDate = new Date(year, month - 1, day)
+  if (
+    parsedDate.getFullYear() === year &&
+    parsedDate.getMonth() === month - 1 &&
+    parsedDate.getDate() === day
+  ) {
+    transactionDate.value = `${value}T12:00`
+  }
+}
+
+const applyReceiptAnalysis = (analysis: NonNullable<Awaited<ReturnType<typeof ocrService.analyzeReceipt>>['data']>) => {
+  type.value = TransactionType.EXPENSE
+  destinationAccountId.value = ''
+  if (analysis.amount !== null && Number.isFinite(analysis.amount)) amount.value = String(analysis.amount)
+  if (analysis.merchantName) merchantName.value = analysis.merchantName
+  applyMatchedAccount(analysis.accountId, analysis.currency)
+  applyMatchedCategory(analysis.categoryId)
+  applyTransactionDate(analysis.transactionDate)
+}
+
+const handleReceiptSelected = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const selectedFile = input.files?.[0]
+  input.value = ''
+  if (!selectedFile) return
+
+  isAnalyzingReceipt.value = true
+  try {
+    const preparedImage = await prepareOcrImage(selectedFile)
+    receiptFileName.value = preparedImage.name
+    const result = await ocrService.analyzeReceipt(preparedImage, navigator.language || 'und')
+    if (!result.success || !result.data) {
+      toast.error(result.message || 'The receipt could not be analyzed.')
+      return
+    }
+
+    applyReceiptAnalysis(result.data)
+    toast.success('Receipt analyzed. Review the transaction fields before saving.')
+  } catch (error) {
+    toast.error(getApiErrorMessage(error, 'Failed to analyze the receipt.'))
+  } finally {
+    isAnalyzingReceipt.value = false
+  }
+}
+
 const resetForm = () => {
   amount.value = ''
   sourceAccountId.value = ''
@@ -236,18 +318,44 @@ onMounted(loadOptions)
       <p class="text-sm text-slate-500 dark:text-slate-400">Record income, expense, or a transfer between accounts.</p>
     </div>
 
+    <section class="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700 dark:bg-slate-900">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Scan a receipt</h2>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Large images are resized on this device, then analyzed to prefill an expense draft.</p>
+        <p v-if="receiptFileName" class="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{{ receiptFileName }}</p>
+      </div>
+      <input
+        ref="receiptInput"
+        id="receipt-image"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        class="sr-only"
+        @change="handleReceiptSelected"
+      />
+      <label for="receipt-image" class="sr-only">Receipt image</label>
+      <button
+        type="button"
+        :disabled="isAnalyzingReceipt || isLoadingOptions"
+        @click="openReceiptPicker"
+        class="shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+      >
+        {{ isAnalyzingReceipt ? 'Analyzing...' : 'Choose receipt image' }}
+      </button>
+    </section>
+
     <div v-if="isLoadingOptions" class="text-sm text-slate-500 dark:text-slate-400">Loading accounts and categories...</div>
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-5">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Transaction Type</label>
-          <SelectField v-model="type" :options="TRANSACTION_TYPES" />
+          <label for="transaction-type" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Transaction Type</label>
+          <SelectField id="transaction-type" v-model="type" :options="TRANSACTION_TYPES" />
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
+          <label for="transaction-amount" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
           <input
+            id="transaction-amount"
             :value="amount"
             @input="onAmountInput"
             type="text"
@@ -261,8 +369,9 @@ onMounted(loadOptions)
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div v-if="needsSource">
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Source Account</label>
+          <label for="source-account" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Source Account</label>
           <SelectField
+            id="source-account"
             v-model="sourceAccountId"
             :options="accountOptions"
             placeholder="Select account"
@@ -270,8 +379,9 @@ onMounted(loadOptions)
         </div>
 
         <div v-if="needsDestination">
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Destination Account</label>
+          <label for="destination-account" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Destination Account</label>
           <SelectField
+            id="destination-account"
             v-model="destinationAccountId"
             :options="accountOptions"
             placeholder="Select account"
@@ -281,13 +391,14 @@ onMounted(loadOptions)
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Category</label>
-          <SelectField v-model="categoryId" :options="categoryOptions" />
+          <label for="transaction-category" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Category</label>
+          <SelectField id="transaction-category" v-model="categoryId" :options="categoryOptions" />
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Payment Method</label>
+          <label for="payment-method" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Payment Method</label>
           <input
+            id="payment-method"
             :value="paymentMethodLabel"
             type="text"
             disabled
@@ -306,8 +417,9 @@ onMounted(loadOptions)
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Transaction Date</label>
+          <label for="transaction-date" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Transaction Date</label>
           <input
+            id="transaction-date"
             v-model="transactionDate"
             type="datetime-local"
             class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
@@ -315,8 +427,9 @@ onMounted(loadOptions)
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Merchant</label>
+          <label for="merchant-name" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Merchant</label>
           <input
+            id="merchant-name"
             v-model="merchantName"
             type="text"
             maxlength="100"
@@ -327,8 +440,9 @@ onMounted(loadOptions)
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Description</label>
+        <label for="transaction-description" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Description</label>
         <textarea
+          id="transaction-description"
           v-model="description"
           rows="2"
           placeholder="Short transaction note"
@@ -337,8 +451,9 @@ onMounted(loadOptions)
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
+        <label for="transaction-note" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
         <input
+          id="transaction-note"
           v-model="note"
           type="text"
           placeholder="Internal note"

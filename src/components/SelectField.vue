@@ -12,6 +12,7 @@ const props = withDefaults(
     defineProps<{
         modelValue: string
         options: SelectOption[]
+        id?: string
         placeholder?: string
         disabled?: boolean
     }>(),
@@ -175,6 +176,7 @@ onBeforeUnmount(() => {
     <div ref="root" class="relative">
         <button
             type="button"
+            :id="id"
             :disabled="disabled"
             class="flex w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-left text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:text-white disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:border-slate-800 dark:disabled:bg-slate-900"
             :class="isOpen ? 'border-indigo-500' : 'border-slate-300 dark:border-slate-700'"

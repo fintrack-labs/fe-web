@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { TransactionType } from '@/dto/transaction.dto'
 import {
-    aggregateMonth,
     currentMonthKey,
     formatMonthLabel,
     shiftMonth,
-    MOCK_TRANSACTION_TYPES
-} from '@/mocks/dashboard'
+    TRANSACTION_TYPES
+} from '@/utils/dashboard'
+import type { DashboardMonthResponseDto } from '@/dto/dashboard.dto'
+import { dashboardService } from '@/services/dashboard.service'
+import { getApiErrorMessage } from '@/utils/api-error'
 import { formatCurrency } from '@/utils/format'
 
 interface TypeMeta {
@@ -49,24 +51,63 @@ const MIN_MONTHS_BACK = 5
 const today = new Date()
 const cursorKey = ref(currentMonthKey())
 const currentKey = currentMonthKey()
+const dashboardData = ref<DashboardMonthResponseDto | null>(null)
+const isLoading = ref(false)
+const loadError = ref('')
+let dashboardRequestId = 0
+
+function emptyDashboard(key: string): DashboardMonthResponseDto {
+    const year = Number(key.slice(0, 4))
+    const monthIndex = Number(key.slice(5, 7)) - 1
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+    const totals = Object.fromEntries(TRANSACTION_TYPES.map((type) => [type, 0])) as Record<TransactionType, number>
+
+    return {
+        key,
+        year,
+        monthIndex,
+        daysInMonth,
+        totals,
+        previousTotals: { ...totals },
+        daily: Object.fromEntries(
+            TRANSACTION_TYPES.map((type) => [type, Array.from({ length: daysInMonth }, () => 0)])
+        ) as Record<TransactionType, number[]>
+    }
+}
+
+const loadDashboard = async () => {
+    const requestId = ++dashboardRequestId
+    const monthKey = cursorKey.value
+    isLoading.value = true
+    loadError.value = ''
+
+    try {
+        const response = await dashboardService.getMonth(monthKey)
+        if (requestId === dashboardRequestId) dashboardData.value = response
+    } catch (error) {
+        if (requestId === dashboardRequestId) {
+            dashboardData.value = emptyDashboard(monthKey)
+            loadError.value = getApiErrorMessage(error, 'Unable to load dashboard data.')
+        }
+    } finally {
+        if (requestId === dashboardRequestId) isLoading.value = false
+    }
+}
+
+watch(cursorKey, (key) => {
+    dashboardData.value = emptyDashboard(key)
+    void loadDashboard()
+}, { immediate: true })
 
 const selectedLabel = computed(() => formatMonthLabel(cursorKey.value))
+const month = computed(() => dashboardData.value ?? emptyDashboard(cursorKey.value))
 const activeDays = computed(() => {
-    const series = aggregateMonth(cursorKey.value)
-    const upToDay =
-        cursorKey.value === currentKey ? today.getDate() : series.daysInMonth
-    return upToDay
+    return cursorKey.value === currentKey
+        ? Math.min(today.getDate(), month.value.daysInMonth)
+        : month.value.daysInMonth
 })
 
-const month = computed(() => {
-    const upToDay = cursorKey.value === currentKey ? today.getDate() : undefined
-    return aggregateMonth(cursorKey.value, upToDay)
-})
-
-const previous = computed(() => {
-    const upToDay = cursorKey.value === currentKey ? today.getDate() : undefined
-    return aggregateMonth(shiftMonth(cursorKey.value, -1), upToDay)
-})
+const previous = computed(() => ({ totals: month.value.previousTotals }))
 
 const isCurrentMonth = computed(() => cursorKey.value === currentKey)
 const canGoNext = computed(() => cursorKey.value < currentKey)
@@ -171,7 +212,7 @@ const deltaArrow = (delta: number | null): string => {
 // Daily chart
 // ---------------------------------------------------------------------------
 
-const visibleTypes = ref<TransactionType[]>([...MOCK_TRANSACTION_TYPES])
+const visibleTypes = ref<TransactionType[]>([...TRANSACTION_TYPES])
 
 const toggleType = (type: TransactionType) => {
     if (visibleTypes.value.includes(type)) {
@@ -213,7 +254,7 @@ const dayColumns = computed(() =>
 // ---------------------------------------------------------------------------
 
 const typeComparisons = computed(() =>
-    MOCK_TRANSACTION_TYPES.map((type) => {
+    TRANSACTION_TYPES.map((type) => {
         const current = month.value.totals[type] ?? 0
         const lastMonth = previous.value.totals[type] ?? 0
         const max = Math.max(current, lastMonth, 1)
@@ -229,7 +270,7 @@ const typeComparisons = computed(() =>
 )
 
 const isEmpty = computed(() =>
-    MOCK_TRANSACTION_TYPES.every((type) => (month.value.totals[type] ?? 0) === 0)
+    TRANSACTION_TYPES.every((type) => (month.value.totals[type] ?? 0) === 0)
 )
 
 // ---------------------------------------------------------------------------
@@ -263,15 +304,14 @@ const dayTickLabel = (dayIndex: number): string =>
             <div class="space-y-1">
                 <div class="flex items-center gap-2">
                     <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-                    <span
-                        class="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500 ring-1 ring-inset ring-amber-500/20 dark:text-amber-400"
-                    >
-                        Mock data
-                    </span>
                 </div>
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                     Daily activity and month-over-month comparison for {{ selectedLabel }}.
                 </p>
+                <div v-if="loadError" role="alert" class="flex items-center gap-3 text-xs text-rose-600 dark:text-rose-400">
+                    <span>{{ loadError }}</span>
+                    <button type="button" class="font-semibold underline" @click="loadDashboard">Retry</button>
+                </div>
             </div>
 
             <div class="flex items-center gap-2">
@@ -338,7 +378,7 @@ const dayTickLabel = (dayIndex: number): string =>
                     </div>
                     <div class="flex flex-wrap gap-1.5">
                         <button
-                            v-for="type in MOCK_TRANSACTION_TYPES"
+                            v-for="type in TRANSACTION_TYPES"
                             :key="type"
                             type="button"
                             @click="toggleType(type)"
@@ -356,7 +396,13 @@ const dayTickLabel = (dayIndex: number): string =>
                     </div>
                 </div>
 
-                <div v-if="isEmpty" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="isLoading" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+                    Loading dashboard data...
+                </div>
+                <div v-else-if="loadError" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+                    Dashboard data is unavailable.
+                </div>
+                <div v-else-if="isEmpty" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
                     No transactions recorded for {{ selectedLabel }}.
                 </div>
 
@@ -430,7 +476,13 @@ const dayTickLabel = (dayIndex: number): string =>
                     </div>
                 </div>
 
-                <div v-if="isEmpty" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="isLoading" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+                    Loading dashboard data...
+                </div>
+                <div v-else-if="loadError" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+                    Dashboard data is unavailable.
+                </div>
+                <div v-else-if="isEmpty" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
                     No data for {{ selectedLabel }}.
                 </div>
 
